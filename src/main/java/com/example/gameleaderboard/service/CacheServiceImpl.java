@@ -1,7 +1,10 @@
 package com.example.gameleaderboard.service;
 
+import com.example.gameleaderboard.controller.ScoreController;
 import com.example.gameleaderboard.model.Score;
 import com.example.gameleaderboard.repository.ScoreRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +13,7 @@ import java.util.*;
 @Service
 public class CacheServiceImpl implements CacheService {
 
-    private final ScoreRepository scoreRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CacheServiceImpl.class);
     Comparator<Score> scoreComparator = new Comparator<Score>() {
         @Override
         public int compare(Score a, Score b) {
@@ -21,11 +24,10 @@ public class CacheServiceImpl implements CacheService {
             return 0;
         }
     };
-    private PriorityQueue<Score> minHeap = new PriorityQueue<>(scoreComparator);
-    private HashMap<Long, Score> hashMap = new HashMap<>();
+    private final PriorityQueue<Score> minHeap = new PriorityQueue<>(scoreComparator);
+    private final HashMap<Long, Score> hashMap = new HashMap<>();
 
     public CacheServiceImpl(@Autowired ScoreRepository scoreRepository) {
-        this.scoreRepository = scoreRepository;
         List<Score> list = scoreRepository.findTop5Scores();
         for (Score score : list)
             addInCache(score);
@@ -38,8 +40,7 @@ public class CacheServiceImpl implements CacheService {
             if (list.size() == 5)
                 break;
         }
-        for (Score score : list)
-            minHeap.add(score);
+        minHeap.addAll(list);
         Collections.reverse(list);
         return list;
     }
@@ -52,22 +53,19 @@ public class CacheServiceImpl implements CacheService {
                 List<Score> scoreList = new LinkedList<>();
                 while(!minHeap.isEmpty()){
                     Score heapTop = minHeap.poll();
-                    if(heapTop.getId() == score.getId()) {
+                    if(heapTop.getId().equals(score.getId()))
                         scoreList.add(score);
-                        continue;
-                    }
-                    scoreList.add(heapTop);
+                    else
+                        scoreList.add(heapTop);
                 }
-                for(Score scoreItr : scoreList)
-                    minHeap.add(scoreItr);
+                minHeap.addAll(scoreList);
                 hashMap.replace(score.getId(), score);
             }
         }
-        if (minHeap.isEmpty() || minHeap.size() < 5) {
+        else if (minHeap.isEmpty() || minHeap.size() < 5) {
             addInCache(score);
-            return;
         }
-        if (minHeap.peek().getScore() < score.getScore()) {
+        else if (minHeap.peek().getScore() < score.getScore()) {
             hashMap.remove(minHeap.poll().getId());
             addInCache(score);
         }
