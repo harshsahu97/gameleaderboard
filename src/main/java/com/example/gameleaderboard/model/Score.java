@@ -2,13 +2,16 @@ package com.example.gameleaderboard.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "Score")
 public class Score {
     @Id
-    @Column(name = "id", unique = true ,nullable = false)
+    @Column(name = "id", unique = true, nullable = false)
     private Long id;
 
     @Column(name = "score", nullable = false)
