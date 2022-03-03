@@ -23,6 +23,8 @@ dependencies {
 	implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
 	compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
 	implementation group: 'com.opencsv', name: 'opencsv', version: '5.6'
+	testImplementation group: 'org.mockito', name: 'mockito-all', version: '1.10.19'
+	testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.8.2'
 }
 
 tasks.named('test') {
