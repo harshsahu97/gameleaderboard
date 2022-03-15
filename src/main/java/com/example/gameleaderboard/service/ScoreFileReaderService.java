@@ -11,10 +11,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import static com.example.gameleaderboard.constant.ScoreLeaderBoardConstants.FILE_PATH;
+
 public class ScoreFileReaderService {
-
-    private static final String FILE_PATH = "C:\\Users\\harsh\\Desktop\\scores.csv";
-
     private static final Logger logger = LoggerFactory.getLogger(ScoreFileReaderService.class);
 
     public static List<Score> readFromFile() throws IOException, CsvValidationException {
@@ -26,7 +25,7 @@ public class ScoreFileReaderService {
                 try {
                     scoreList.add(convertToScore(nextLine));
                 } catch (NumberFormatException e) {
-                    logger.error("Couldnt parse a line in CSV");
+                    logger.error("Couldn't parse a line in CSV");
                     continue;
                 }
             }
@@ -39,7 +38,7 @@ public class ScoreFileReaderService {
 
     private static Score convertToScore(String[] line) throws NumberFormatException {
         Score score = new Score();
-        score.setId(Long.parseLong(line[0]));
+        score.setPlayerId(Long.parseLong(line[0]));
         score.setPlayerName(line[1]);
         score.setScore(Long.parseLong(line[2]));
         return score;

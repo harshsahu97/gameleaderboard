@@ -1,9 +1,9 @@
 package com.example.gameleaderboard.controller;
 
 import com.example.gameleaderboard.model.Score;
-import com.example.gameleaderboard.repository.ScoreRepository;
 import com.example.gameleaderboard.service.CacheService;
 import com.example.gameleaderboard.service.ScoreFileReaderService;
+import com.example.gameleaderboard.service.ScoreService;
 import com.opencsv.exceptions.CsvValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,44 +22,44 @@ public class ScoreController {
 
     private static final Logger logger = LoggerFactory.getLogger(ScoreController.class);
 
-    private final ScoreRepository scoreRepository;
+    private final ScoreService scoreService;
 
     private final CacheService cacheService;
 
-    public ScoreController(@Autowired CacheService cacheService, @Autowired ScoreRepository scoreRepository) {
+    public ScoreController(@Autowired CacheService cacheService, @Autowired ScoreService scoreService) {
         this.cacheService = cacheService;
-        this.scoreRepository = scoreRepository;
+        this.scoreService = scoreService;
     }
 
-    @GetMapping("/")
+    @GetMapping("/get_top_scores")
     public List<Score> getTop5Scores() {
         try {
             return cacheService.getTopFive();
         } catch (Exception e) {
             logger.error(e.getStackTrace().toString());
-            return scoreRepository.findTop5Scores();
-            //return null;
+            return scoreService.findTop5Scores();
         }
     }
 
-    @PostMapping("/save")
-    public void saveScore(@RequestBody Score score) {
+    @PostMapping("/save_player_score")
+    public void saveHighestScoreOfPlayer(@RequestBody Score score) {
         try {
             cacheService.addOrUpdateInCache(score);
-            Optional<Score> oldScore = scoreRepository.findById(score.getId());
+            Optional<Score> oldScore = scoreService.findScoreByPlayerId(score.getPlayerId());
             if (oldScore.isPresent()) {
                 if (oldScore.get().getScore() > score.getScore())
                     return;
             }
-            scoreRepository.save(score);
+            scoreService.saveScore(score);
         } catch (Exception e) {
             logger.error(e.getStackTrace().toString());
         }
     }
 
+    @Deprecated
     @GetMapping("/all")
     public List<Score> getAllScores() {
-        return scoreRepository.findAll();
+        return scoreService.fetchAllScores();
     }
 
     @GetMapping("/filereader")
@@ -67,7 +67,7 @@ public class ScoreController {
         try {
             List<Score> scoreList = ScoreFileReaderService.readFromFile();
             for (Score score : scoreList) {
-                saveScore(score);
+                saveHighestScoreOfPlayer(score);
             }
         } catch (CsvValidationException csvValidationException) {
             logger.error("Invalid CSV");
