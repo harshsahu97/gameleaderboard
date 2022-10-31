@@ -3,8 +3,9 @@ This web app is a project for a game-service with consumes players scores and wh
 
 
 #### PreRequisites
-* Java, SpringBoot
-* MySql
+* Java 8 
+* SpringBoot
+* MySql 5.6
 
 
 ###  Endpoints
